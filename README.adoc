@@ -315,6 +315,6 @@ image::img/ev-subset.png[]
 
 === Change the evaluated AI
 
-`dojo --ai Dojo evaluate`
+`dojo --ai Dojo:1 evaluate`
 
 image::img/ev-change.png[]
