@@ -32,7 +32,17 @@ and the link:dojo.toml[dojo.toml] file in the repository:
 
 [source,toml]
 ----
-include::dojo.toml[]
+current-ai = "Dojo"
+
+[run]
+players = [ "Dojo", "Dummy", "Dummy", "Dummy" ]
+shuffle = false
+seed = "time"
+printoutput = false
+
+[evaluate]
+against = ["Dojo:..-2", "Dummy"]
+games = 100
 ----
 
 
