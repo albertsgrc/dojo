@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/jedib0t/go-pretty/progress"
@@ -235,18 +236,18 @@ func evaluate(c *cli.Context) error {
 		percentile99, _ := stats.Percentile(data, 99)
 		winPercentageEvaluated := 100 * float64(evaluation.NumWinsEvaluated) / float64(numGames)
 
-		playerPrefix := "  "
+		playerSuffix := ""
 
 		isSpecial := evaluation.Player == myAi.PlayerName() || i == 0
 
 		if evaluation.Player == myAi.PlayerName() {
-			playerPrefix = "✨"
+			playerSuffix = "✨"
 			winPercentageEvaluated = 0
 		}
 
 		t.AppendRow(table.Row{
-			i + 1,
-			fr(playerPrefix+evaluation.Player, isSpecial),
+			strconv.Itoa(i+1) + playerSuffix,
+			fr(evaluation.Player, isSpecial),
 			fr(evaluation.Elo, isSpecial),
 			fr(fw(firstPercentage), isSpecial),
 			fr(fw(secondPercentage), isSpecial),
