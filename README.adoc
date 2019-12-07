@@ -4,14 +4,18 @@ Versioning, running and evaluating EDA Game AIs
 
 == Building
 
-Run `make` to generate the *dojo* executable and `make install` to install on your system.
+Run `make` to generate the *dojo* executable
+
+== Installation
+
+Run `make install` to install the built executable on your system.
 
 == Configuration
 
 `dojo` can be configured via:
 
 * CLI options
-* The `dojo.toml` configuration file in the current working directory (See link:dojo.toml[dojo.toml]) for an example
+* The `dojo.toml` configuration file in the current working directory (See link:dojo.toml[dojo.toml] for an example)
 
 When an option is specified both in the configuration file and the CLI, the CLI option
 takes precedence.
