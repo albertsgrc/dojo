@@ -312,3 +312,9 @@ image::img/ev-1000.png[]
 `dojo evaluate --against Dummy --against Dojo:-3..-2`
 
 image::img/ev-subset.png[]
+
+=== Change the evaluated AI
+
+`dojo --ai Dojo evaluate`
+
+image::img/ev-change.png[]
