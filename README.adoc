@@ -4,7 +4,7 @@ Versioning, running and evaluating EDA Game AIs
 
 == Building
 
-Run `make` to generate the *dojo* executable
+Run `make` to generate the *dojo* executable.
 
 == Installation
 
@@ -162,7 +162,7 @@ Note that specifying no version defaults to the last version of that AI.
 ----
 
 Creates the file `AIDojo_4.cc` with the content copied from 
-`AIDojo_3_avoid_enemies.cc` and the `#define PLAYER_NAME AIDojo_4`
+`AIDojo_3_avoid_enemies.cc` and the `#define PLAYER_NAME AIDojo_4`.
 
 === Specifying a description
 
