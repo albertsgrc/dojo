@@ -1,0 +1,11 @@
+current-ai = "Dojo"
+
+[run]
+players = [ "Dojo", "Dummy", "Dummy", "Dummy" ]
+shuffle = false
+seed = "time"
+printoutput = false
+
+[evaluate]
+against = ["Dojo:..-2", "Dummy"]
+games = 100

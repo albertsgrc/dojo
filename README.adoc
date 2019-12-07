@@ -1,0 +1,337 @@
+= Dojo
+
+Versioning, running and evaluating EDA Game AIs
+
+== Building
+
+Run `make` to generate the *dojo* executable and `make install` to install on your system.
+
+== Configuration
+
+`dojo` can be configured via:
+
+* CLI options
+* The `dojo.toml` configuration file in the current working directory (See link:dojo.toml[dojo.toml]) for an example
+
+When an option is specified both in the configuration file and the CLI, the CLI option
+takes precedence.
+
+== Usage
+
+Supose we have the following AI files:
+
+* AIDummy.o
+* AIDemo.cc
+* AINull.cc
+* AIDojo.cc
+* AIDojo_1.cc
+* AIDojo_2.cc
+* AIDojo_3_avoid_enemies.cc
+
+and the link:dojo.toml[dojo.toml] file in the repository:
+
+[source,toml]
+----
+include::dojo.toml[]
+----
+
+
+== Listing AIs
+
+In order to describe subsets of AIs we use AI descriptors, which have the following format:
+
+`<name>[:[versionFrom[..versionTo]]]`
+
+where `versionFrom` and `versionTo` are integer numbers.
+
+The following examples showcase examples of AI descriptors and the corresponding
+subsets they represent.
+
+=== List all AIs
+
+`dojo ai list`
+
+----
+╭─ Demo
+│  ╰─ AIDemo.cc
+├─ Dojo
+│  ├─ AIDojo_3_avoid_enemies.cc ✨
+│  ├─ AIDojo_2.cc
+│  ├─ AIDojo_1.cc
+│  ╰─ AIDojo.cc
+├─ Dummy
+│  ╰─ AIDummy.cc
+╰─ Null
+   ╰─ AINull.cc
+----
+
+=== List specific version
+
+`dojo ai list Dojo:3`
+
+----
+── Dojo
+   ╰─ AIDojo_3_avoid_enemies.cc ✨
+----
+
+`dojo ai list Dojo:0`
+
+----
+── Dojo
+   ╰─ AIDojo.cc
+----
+
+`dojo ai list Dojo:-1`
+
+----
+── Dojo
+   ╰─ AIDojo_3_avoid_enemies.cc ✨
+----
+
+`dojo ai list Dojo`
+
+----
+── Dojo
+   ╰─ AIDojo_3_avoid_enemies.cc ✨
+----
+
+Note that specifying no version defaults to the last version of that AI.
+
+=== List version ranges
+
+`dojo ai list Dojo:1..`
+
+----
+── Dojo
+   ├─ AIDojo_3_avoid_enemies.cc ✨
+   ├─ AIDojo_2.cc
+   ╰─ AIDojo_1.cc
+----
+
+`dojo ai list Dojo:..-2`
+
+----
+── Dojo
+   ├─ AIDojo_2.cc
+   ├─ AIDojo_1.cc
+   ╰─ AIDojo.cc
+----
+
+`dojo ai list Dojo:1..2 Dummy`
+
+----
+╭─ Dojo
+│  ├─ AIDojo_2.cc
+│  ╰─ AIDojo_1.cc
+╰─ Dummy
+   ╰─ AIDummy.cc
+----
+
+=== List all versions
+
+`dojo ai list Dojo:`
+
+----
+── Dojo
+   ├─ AIDojo_3_avoid_enemies.cc ✨
+   ├─ AIDojo_2.cc
+   ├─ AIDojo_1.cc
+   ╰─ AIDojo.cc
+----
+
+== Creating a new version
+
+`dojo ai new`
+
+----
+🚀 created version 4 for AI Dojo based on AIDojo_3_avoid_enemies.cc
+----
+
+Creates the file `AIDojo_4.cc` with the content copied from 
+`AIDojo_3_avoid_enemies.cc` and the `#define PLAYER_NAME AIDojo_4`
+
+=== Specifying a description
+
+You can also specify a *short description* of the changes introduced in the version:
+
+`dojo ai new be_smart`
+
+----
+🚀 created version 5 for AI Dojo based on AIDojo_4.cc
+----
+
+Creates file `AIDojo_5_be_smart.cc` with the content copied from
+`AIDojo_4.cc` and the `#define PLAYER_NAME AIDojo_5`. Note that the description
+is not included in the player name because the player name length is very limited.
+
+=== Using a different base AI
+
+`dojo ai new --from Dojo:1`
+
+----
+🚀 created version 6 for AI Dojo based on AIDojo_1.cc
+----
+
+== Running
+
+`dojo run`
+
+----
+Compiling ... done
+Running game             ...  0.00% [384.088ms]
+
+   Dojo_6        19
+   Dummy         202
+✌️  Dummy         1004
+   Dummy         393
+----
+
+Running looks at the players argument, in this case 
+`players = [ "Dojo", "Dummy", "Dummy", "Dummy" ]` from the configuration file. It executes
+the run command with the players specified in the same order, where each player
+is chosen from the subset of players defined by the AI descriptor.
+
+=== Randomly shuffle the order of the players
+
+`dojo run --shuffle`
+
+----
+Compiling ... done
+Running game             ...  0.00% [292.813ms]
+
+   Dummy         202
+✌️  Dummy         1004
+   Dummy         393
+   Dojo_6        19
+----
+
+=== Print the game output
+
+`dojo run --print-output`
+
+----
+Compiling ... done
+info: seed 1738030391
+info: loading game
+Wrong number of cave cells. Generating another grid...
+info: loaded game
+info: loading player Dojo_6
+info: loading player Dummy
+info: loading player Dummy
+info: loading player Dummy
+info: players loaded
+info: start round 1
+info:     start player 0
+info:     end player 0
+info:     start player 1
+info:     end player 1
+info:     start player 2
+info:     end player 2
+info:     start player 3
+info:     end player 3
+.
+.
+.
+----
+
+=== Specify a seed
+
+`dojo run --seed 8 --print-output`
+
+----
+Compiling ... done
+info: seed 3
+info: loading game
+info: loaded game
+info: loading player Dojo_6
+info: loading player Dummy
+info: loading player Dummy
+info: loading player Dummy
+info: players loaded
+----
+
+=== Specify players
+
+`dojo run -p Dojo: -p Dojo: -p Dummy -p Dojo:..-2`
+
+----
+Compiling ... done
+Running game             ...  0.00% [291.705ms]
+
+   Dojo          20
+   Dojo_5        79
+✌️  Dummy         1997
+   Dojo_3        41
+----
+
+== Evaluation
+
+`dojo evaluate`
+
+----
+Compiling ... done
+Running 50 games   ... 96.00% [48]
+(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●◌◌) [4s; ~ETA: 1s]
+ Ranking
+ #  AI        ELO   WIN%    SCORE            95%      99%      EVWIN%  GAMES
+ 1    Dummy   1649  100.00  1768.25 ± 8.52%  1982.00  2045.50  0.00    24
+ 2  ✨Dojo_6  1599  4.76    115.19 ± 57.92%  190.00   194.00   4.76    21
+ 3    Dojo_4  1546  30.77   124.46 ± 72.41%  232.50   259.00   0.00    26
+ 4    Dojo_3  1478  4.76    100.24 ± 73.28%  189.00   205.00   0.00    21
+ 5    Dojo_5  1457  24.14   138.21 ± 59.17%  264.50   284.00   3.45    29
+ 6    Dojo_2  1448  14.29   98.71 ± 77.21%   205.50   228.00   0.00    28
+ 7    Dojo    1412  18.18   117.36 ± 70.26%  234.50   268.00   4.55    22
+ 8    Dojo_1  1411  3.45    84.03 ± 83.69%   194.00   226.00   3.45    29
+----
+
+Evaluate runs a series of games where the AIs that play the game are picked
+from the subset described by the `against` argument (list of AI descriptors).
+The seed changes on every game run and the player order is always shuffled.
+
+=== Column description
+
+AI:: The name of the AI
+ELO:: The https://en.wikipedia.org/wiki/Elo_rating_system[ELO rating] of the AI
+WIN:: The win ratio of the AI, calculated as `NUM_WINS/GAMES` where games is the number of games
+the AI has played
+SCORE:: Average score of the AI
+95%:: 95% percentile of the AI score, i.e on 95% of the games the AI has a score less than that
+99%:: 99% percentile of the AI score
+EVWIN%:: Win ratio of the evaluated AI (marked with ✨) over games where the current AI was a player
+GAMES:: Number of games the AI played
+
+=== Specify a number of games
+
+`dojo evaluate --games 500`
+
+----
+Compiling ... done
+Running 1000 games ... 99.60% [996]
+(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●○) [1m12s; ~ETA: 2s]
+ Ranking
+ #  AI        ELO   WIN%    SCORE             95%      99%      EVWIN%  GAMES
+ 1    Dummy   1726  100.00  1759.64 ± 10.20%  2054.50  2173.00  0.00    477
+ 2    Dojo_5  1521  17.67   111.97 ± 70.63%   231.00   279.00   6.21    515
+ 3    Dojo_1  1513  13.14   113.97 ± 69.12%   235.50   283.00   9.02    510
+ 4    Dojo    1480  16.39   112.64 ± 70.91%   236.50   283.50   6.43    482
+ 5    Dojo_2  1469  13.96   107.54 ± 74.05%   237.00   297.50   7.50    480
+ 6  ✨Dojo_6  1462  14.65   110.00 ± 73.47%   239.00   287.50   14.65   505
+ 7    Dojo_3  1456  13.70   107.51 ± 69.31%   216.00   267.50   7.69    533
+ 8    Dojo_4  1373  14.46   111.88 ± 71.17%   239.50   280.00   7.23    498
+----
+
+=== Change the against subset
+
+`dojo evaluate --against Dummy --against Dojo:-3..-2`
+
+----
+Compiling ... done
+Running 50 games   ... 96.00% [48]
+(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●◌◌) [4s; ~ETA: 1s]
+ Ranking
+ #  AI        ELO   WIN%    SCORE             95%      99%      EVWIN%  GAMES
+ 1    Dummy   1637  100.00  1760.46 ± 11.21%  2096.00  2145.50  0.00    50
+ 2    Dojo_5  1484  0.00    27.78 ± 70.83%    60.00    68.50    0.00    50
+ 3    Dojo_4  1450  0.00    25.66 ± 78.05%    67.00    81.50    0.00    50
+ 4  ✨Dojo_6  1429  0.00    27.62 ± 91.09%    68.50    108.00   0.00    50
+----
