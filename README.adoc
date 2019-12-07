@@ -282,21 +282,7 @@ Running game             ...  0.00% [291.705ms]
 
 `dojo evaluate`
 
-----
-Compiling ... done
-Running 50 games   ... 96.00% [48]
-(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●◌◌) [4s; ~ETA: 1s]
- Ranking
- #  AI        ELO   WIN%    SCORE            95%      99%      EVWIN%  GAMES
- 1    Dummy   1649  100.00  1768.25 ± 8.52%  1982.00  2045.50  0.00    24
- 2  ✨Dojo_6  1599  4.76    115.19 ± 57.92%  190.00   194.00   4.76    21
- 3    Dojo_4  1546  30.77   124.46 ± 72.41%  232.50   259.00   0.00    26
- 4    Dojo_3  1478  4.76    100.24 ± 73.28%  189.00   205.00   0.00    21
- 5    Dojo_5  1457  24.14   138.21 ± 59.17%  264.50   284.00   3.45    29
- 6    Dojo_2  1448  14.29   98.71 ± 77.21%   205.50   228.00   0.00    28
- 7    Dojo    1412  18.18   117.36 ± 70.26%  234.50   268.00   4.55    22
- 8    Dojo_1  1411  3.45    84.03 ± 83.69%   194.00   226.00   3.45    29
-----
+image::img/ev.png[]
 
 Evaluate runs a series of games where the AIs that play the game are picked
 from the subset described by the `against` argument (list of AI descriptors).
@@ -316,36 +302,13 @@ GAMES:: Number of games the AI played
 
 === Specify a number of games
 
-`dojo evaluate --games 500`
+`dojo evaluate --games 1000`
 
-----
-Compiling ... done
-Running 1000 games ... 99.60% [996]
-(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●○) [1m12s; ~ETA: 2s]
- Ranking
- #  AI        ELO   WIN%    SCORE             95%      99%      EVWIN%  GAMES
- 1    Dummy   1726  100.00  1759.64 ± 10.20%  2054.50  2173.00  0.00    477
- 2    Dojo_5  1521  17.67   111.97 ± 70.63%   231.00   279.00   6.21    515
- 3    Dojo_1  1513  13.14   113.97 ± 69.12%   235.50   283.00   9.02    510
- 4    Dojo    1480  16.39   112.64 ± 70.91%   236.50   283.50   6.43    482
- 5    Dojo_2  1469  13.96   107.54 ± 74.05%   237.00   297.50   7.50    480
- 6  ✨Dojo_6  1462  14.65   110.00 ± 73.47%   239.00   287.50   14.65   505
- 7    Dojo_3  1456  13.70   107.51 ± 69.31%   216.00   267.50   7.69    533
- 8    Dojo_4  1373  14.46   111.88 ± 71.17%   239.50   280.00   7.23    498
-----
+image::img/ev-1000.png[]
+
 
 === Change the against subset
 
 `dojo evaluate --against Dummy --against Dojo:-3..-2`
 
-----
-Compiling ... done
-Running 50 games   ... 96.00% [48]
-(●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●◌◌) [4s; ~ETA: 1s]
- Ranking
- #  AI        ELO   WIN%    SCORE             95%      99%      EVWIN%  GAMES
- 1    Dummy   1637  100.00  1760.46 ± 11.21%  2096.00  2145.50  0.00    50
- 2    Dojo_5  1484  0.00    27.78 ± 70.83%    60.00    68.50    0.00    50
- 3    Dojo_4  1450  0.00    25.66 ± 78.05%    67.00    81.50    0.00    50
- 4  ✨Dojo_6  1429  0.00    27.62 ± 91.09%    68.50    108.00   0.00    50
-----
+image::img/ev-subset.png[]
