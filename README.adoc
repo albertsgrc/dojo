@@ -291,13 +291,15 @@ The seed changes on every game run and the player order is always shuffled.
 === Column description
 
 AI:: The name of the AI
-ELO:: The https://en.wikipedia.org/wiki/Elo_rating_system[ELO rating] of the AI
-WIN:: The win ratio of the AI, calculated as `NUM_WINS/GAMES` where games is the number of games
+ELO:: The https://en.wikipedia.org/wiki/Elo_rating_system[ELO rating] of the AI, computed as all-pair ELO
+1ST%:: The win ratio of the AI, calculated as `NUM_WINS/GAMES` where games is the number of games
 the AI has played
+<=2ND%::The percentage of games the AI played where it placed 2nd or better
+<=3RD%::The percentage of games the AI played where it placed 3rd or better
+EVWIN%:: Win ratio of the evaluated AI (marked with ✨) over games where the current AI was a player
 SCORE:: Average score of the AI
 95%:: 95% percentile of the AI score, i.e on 95% of the games the AI has a score less than that
 99%:: 99% percentile of the AI score
-EVWIN%:: Win ratio of the evaluated AI (marked with ✨) over games where the current AI was a player
 GAMES:: Number of games the AI played
 
 === Specify a number of games

@@ -14,19 +14,19 @@ import (
 )
 
 type aiResults struct {
-	NumWins          int
-	NumGames         int
-	Scores           []int
-	NumWinsEvaluated int
-	Elo              int
+	NumGamesAtPlaceOrBetter []int
+	NumGames                int
+	Scores                  []int
+	NumWinsEvaluated        int
+	Elo                     int
 }
 
 type EvaluationResult struct {
-	Player           string
-	NumWins          int
-	Scores           []int
-	NumWinsEvaluated int
-	Elo              int
+	Player                  string
+	NumGamesAtPlaceOrBetter []int
+	Scores                  []int
+	NumWinsEvaluated        int
+	Elo                     int
 }
 
 type gameResultError struct {
@@ -57,8 +57,92 @@ func updateElos(winner, loser *aiResults) {
 	pLoser := winProbability(winner.Elo, loser.Elo)
 	pWinner := winProbability(loser.Elo, winner.Elo)
 
-	winner.Elo += int(60 * (1 - pWinner))
-	loser.Elo += int(60 * (0 - pLoser))
+	winner.Elo += int(11 * (1 - pWinner))
+	loser.Elo += int(11 * (0 - pLoser))
+}
+
+func runGame(randGenTime *rand.Rand, ais []*ai.Ai, limit *limiter.ConcurrencyLimiter, gameResults chan gameResultError) {
+	descriptors := []string{}
+
+	playerSet := make(map[string]bool)
+
+	for player := 0; player < 4; player++ {
+		descriptor := ais[randGenTime.Intn(len(ais))].Descriptor()
+		if player < len(ais) {
+			_, ok := playerSet[descriptor]
+			for ok {
+				descriptor = ais[randGenTime.Intn(len(ais))].Descriptor()
+				_, ok = playerSet[descriptor]
+			}
+		}
+
+		playerSet[descriptor] = true
+		descriptors = append(descriptors, descriptor)
+
+	}
+
+	limit.Execute(func() {
+		gameResult, err := Run(descriptors, "time", true, false)
+		gameResults <- gameResultError{gameResult, err}
+	})
+}
+
+func processResult(evaluatedAi *ai.Ai, res gameResultError, aiToResults map[string]*aiResults, errChan chan error, onGameFinished func()) {
+	if res.err != nil {
+		errChan <- res.err
+	}
+
+	gameResult := res.result
+
+	scores := make(map[string]int)
+	for i, player := range gameResult.Players {
+		if gameResult.Scores[i] >= scores[player] {
+			scores[player] = gameResult.Scores[i]
+		}
+	}
+
+	for player, score := range scores {
+		var evaluations *aiResults
+		var ok bool
+		if evaluations, ok = aiToResults[player]; !ok {
+			evaluations = new(aiResults)
+			evaluations.Scores = make([]int, 0)
+			evaluations.NumGamesAtPlaceOrBetter = make([]int, 3)
+			evaluations.Elo = 1500
+		}
+
+		evaluations.Scores = append(evaluations.Scores, score)
+		aiToResults[player] = evaluations
+	}
+
+	winner := gameResult.Players[gameResult.Winner]
+
+	if winner == evaluatedAi.PlayerName() {
+		for player := range scores {
+			aiToResults[player].NumWinsEvaluated++
+		}
+	}
+
+	players := gameResult.PlayersSorted
+	p0 := aiToResults[players[0]]
+	p1 := aiToResults[players[1]]
+	p2 := aiToResults[players[2]]
+	p3 := aiToResults[players[3]]
+
+	updateElos(p0, p1)
+	updateElos(p0, p2)
+	updateElos(p0, p3)
+	updateElos(p1, p2)
+	updateElos(p1, p3)
+	updateElos(p2, p3)
+
+	for i, player := range gameResult.PlayersSorted {
+		for j := i; j < 3; j++ {
+			aiToResults[player].NumGamesAtPlaceOrBetter[j]++
+		}
+	}
+
+	onGameFinished()
 }
 
 // Evaluate ...
@@ -83,55 +167,7 @@ func Evaluate(evaluatedAi *ai.Ai, numGames int, againstDescriptors []string, onG
 
 	go func() {
 		for res := range gameResults {
-			if res.err != nil {
-				errChan <- res.err
-			}
-
-			gameResult := res.result
-
-			scores := make(map[string]int)
-			for i, player := range gameResult.Players {
-				if gameResult.Scores[i] >= scores[player] {
-					scores[player] = gameResult.Scores[i]
-				}
-			}
-
-			for player, score := range scores {
-				var evaluations *aiResults
-				var ok bool
-				if evaluations, ok = aiToResults[player]; !ok {
-					evaluations = new(aiResults)
-					evaluations.Scores = make([]int, 0)
-					evaluations.Elo = 1500
-				}
-
-				evaluations.Scores = append(evaluations.Scores, score)
-				aiToResults[player] = evaluations
-			}
-
-			winner := gameResult.Players[gameResult.Winner]
-
-			if winner == evaluatedAi.PlayerName() {
-				for player := range scores {
-					aiToResults[player].NumWinsEvaluated++
-				}
-			}
-
-			players := gameResult.PlayersSorted
-			p0 := aiToResults[players[0]]
-			p1 := aiToResults[players[1]]
-			p2 := aiToResults[players[2]]
-			p3 := aiToResults[players[3]]
-
-			updateElos(p0, p1)
-			updateElos(p1, p2)
-			updateElos(p2, p3)
-
-			evaluations := aiToResults[winner]
-			evaluations.NumWins++
-			aiToResults[winner] = evaluations
-
-			onGameFinished()
+			processResult(evaluatedAi, res, aiToResults, errChan, onGameFinished)
 		}
 
 		close(errChan)
@@ -142,29 +178,7 @@ func Evaluate(evaluatedAi *ai.Ai, numGames int, againstDescriptors []string, onG
 	randGenTime := rand.New(s)
 
 	for game := 0; game < numGames; game++ {
-		descriptors := []string{}
-
-		playerSet := make(map[string]bool)
-
-		for player := 0; player < 4; player++ {
-			descriptor := ais[randGenTime.Intn(len(ais))].Descriptor()
-			if player < len(ais) {
-				_, ok := playerSet[descriptor]
-				for ok {
-					descriptor = ais[randGenTime.Intn(len(ais))].Descriptor()
-					_, ok = playerSet[descriptor]
-				}
-			}
-
-			playerSet[descriptor] = true
-			descriptors = append(descriptors, descriptor)
-
-		}
-
-		limit.Execute(func() {
-			gameResult, err := Run(descriptors, "time", true, false)
-			gameResults <- gameResultError{gameResult, err}
-		})
+		runGame(randGenTime, ais, limit, gameResults)
 	}
 
 	limit.Wait()
@@ -179,7 +193,7 @@ func Evaluate(evaluatedAi *ai.Ai, numGames int, againstDescriptors []string, onG
 
 		evaluationResult := new(EvaluationResult)
 		evaluationResult.Player = player
-		evaluationResult.NumWins = aiResults.NumWins
+		evaluationResult.NumGamesAtPlaceOrBetter = aiResults.NumGamesAtPlaceOrBetter
 		evaluationResult.Scores = aiResults.Scores
 		evaluationResult.NumWinsEvaluated = aiResults.NumWinsEvaluated
 		evaluationResult.Elo = aiResults.Elo

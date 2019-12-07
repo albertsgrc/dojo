@@ -215,7 +215,7 @@ func evaluate(c *cli.Context) error {
 	t.SetOutputMirror(os.Stdout)
 	t.SetStyle(table.StyleColoredGreenWhiteOnBlack)
 	t.SetTitle("Ranking")
-	t.AppendHeader(table.Row{"#", "AI", "Elo", "Win%", "Score", "95%", "99%", "EvWin%", "Games"})
+	t.AppendHeader(table.Row{"#", "AI", "Elo", "1st%", "<=2nd%", "<=3rd%", "EvWin%", "Score", "95%", "99%", "Games"})
 
 	for i, evaluation := range evaluations {
 		numGames := len(evaluation.Scores)
@@ -226,7 +226,9 @@ func evaluate(c *cli.Context) error {
 			data[i] = float64(score)
 		}
 
-		winPercentage := 100 * float64(evaluation.NumWins) / float64(numGames)
+		firstPercentage := 100 * float64(evaluation.NumGamesAtPlaceOrBetter[0]) / float64(numGames)
+		secondPercentage := 100 * float64(evaluation.NumGamesAtPlaceOrBetter[1]) / float64(numGames)
+		thirdPercentage := 100 * float64(evaluation.NumGamesAtPlaceOrBetter[2]) / float64(numGames)
 		avgScore, _ := stats.Mean(data)
 		stdevScore, _ := stats.StandardDeviation(data)
 		percentile95, _ := stats.Percentile(data, 95)
@@ -239,17 +241,20 @@ func evaluate(c *cli.Context) error {
 
 		if evaluation.Player == myAi.PlayerName() {
 			playerPrefix = "✨"
+			winPercentageEvaluated = 0
 		}
 
 		t.AppendRow(table.Row{
 			i + 1,
 			fr(playerPrefix+evaluation.Player, isSpecial),
 			fr(evaluation.Elo, isSpecial),
-			fr(fw(winPercentage), isSpecial),
+			fr(fw(firstPercentage), isSpecial),
+			fr(fw(secondPercentage), isSpecial),
+			fr(fw(thirdPercentage), isSpecial),
+			fr(ff(winPercentageEvaluated), isSpecial),
 			fr(fmt.Sprintf(`%.2f ± %.2f%s`, avgScore, 100*stdevScore/avgScore, "%"), isSpecial),
 			fr(ff(percentile95), isSpecial),
 			fr(ff(percentile99), isSpecial),
-			fr(ff(winPercentageEvaluated), isSpecial),
 			fr(numGames, isSpecial),
 		})
 	}
