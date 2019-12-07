@@ -254,7 +254,7 @@ info:     end player 3
 
 ----
 Compiling ... done
-info: seed 3
+info: seed 8
 info: loading game
 info: loaded game
 info: loading player Dojo_6
