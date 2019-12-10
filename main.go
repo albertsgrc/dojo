@@ -271,7 +271,7 @@ func before(c *cli.Context) error {
 
 func main() {
 	if _, err := os.Stat("dojo.toml"); os.IsNotExist(err) {
-		fmt.Println("Config file dojo.toml not found in current directory. See https://github.com/albertsgrc/dojo/dojo.toml for an example")
+		fmt.Println("Config file dojo.toml not found in current directory. See https://github.com/albertsgrc/dojo/blob/master/dojo.toml for an example")
 		os.Exit(1)
 	}
 
